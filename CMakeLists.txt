@@ -17,6 +17,14 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        jeditor.cpp
+        jeditor.h
+        document.cpp
+        document.h
+        documentsource.cpp
+        documentsource.h
+        documentbuffer.cpp
+        documentbuffer.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
