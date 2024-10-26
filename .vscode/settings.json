@@ -1,0 +1,13 @@
+{
+    "cmake.generator": "Ninja",
+    "cmake.configureEnvironment": {
+        "PATH": "${env:PATH};D:/Qt/5.15.0/msvc2019_64/bin"
+    },
+    "clangd.arguments": [
+        "--compile-commands-dir=../_build/jeditor",
+        "--completion-style=detailed",
+        "--header-insertion=iwyu",
+        "--header-insertion-decorators"
+    ],
+    "cmake.buildArgs": ["-j4"]
+}
