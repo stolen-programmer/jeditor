@@ -7,6 +7,7 @@
 
 #include <QFile>
 #include <QRegularExpression>
+#include <QTextCodec>
 #include <QTextStream>
 
 #include <cstring>
@@ -14,6 +15,7 @@
 #include <qcorotask.h>
 #include <qlocale.h>
 #include <qobject.h>
+#include <qtextcodec.h>
 #include <qvariant.h>
 #include <qwindowdefs.h>
 
@@ -26,17 +28,19 @@ DocumentBuffer::DocumentBuffer(uint16_t rows, uint8_t width)
 {
 }
 
-QCoro::Task<> DocumentBuffer::loadFromFile(QString filename)
+QCoro::Task<bool> DocumentBuffer::loadFromFile(QString filename, const QString& charset)
 {
     // Load file content into buffer
 
     QFile file(filename);
     if (!file.exists()) { // Check if file exists
-        co_return;
+        co_return false;
     }
     if (!file.open(QIODevice::ReadOnly)) {
-        co_return;
+        co_return false;
     }
+
+    auto codec = QTextCodec::codecForName(charset.toUtf8());
 
     auto qFile = qCoro(file);
 
@@ -54,7 +58,7 @@ QCoro::Task<> DocumentBuffer::loadFromFile(QString filename)
         co_await QCoro::sleepFor(1ms);
 
         auto data = co_await qFile.read(1024);
-        auto content = QString { data };
+        auto content = codec->toUnicode(data);
 
         result += content;
         auto index = 0;
@@ -63,6 +67,11 @@ QCoro::Task<> DocumentBuffer::loadFromFile(QString filename)
         while (iter.hasNext()) {
             auto match = iter.next();
             auto line = result.mid(index, match.capturedStart() - index);
+            if (line.size() > _width) {
+                // TODO handle line too long
+                co_return false;
+            }
+
             index = match.capturedEnd();
 
             auto ucs4 = line.toUcs4();
@@ -72,6 +81,8 @@ QCoro::Task<> DocumentBuffer::loadFromFile(QString filename)
 
         result = result.mid(index);
     }
+
+    co_return true;
 }
 
 DocumentBuffer::~DocumentBuffer()

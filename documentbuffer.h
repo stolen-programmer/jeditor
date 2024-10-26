@@ -19,7 +19,7 @@ struct DocumentBuffer {
 
     explicit DocumentBuffer(uint16_t rows, uint8_t width);
 
-    QCoro::Task<> loadFromFile(QString filename);
+    QCoro::Task<bool> loadFromFile(QString filename, const QString& charset = "UTF-8");
 
     ~DocumentBuffer();
 
